@@ -1,3 +1,5 @@
+# تعديل مسار الـ templates عشان يشتغل على السيرفرات الخارجية
+app = Flask(__name__, template_folder='templates')
 import os
 import google.generativeai as genai
 from flask import Flask, render_template, request, jsonify
