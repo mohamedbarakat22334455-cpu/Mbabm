@@ -3,4 +3,3 @@ google-generativeai
 pypdf
 chromadb
 langchain-text-splitters
-gunicorn
