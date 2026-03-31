@@ -3,19 +3,14 @@ import google.generativeai as genai
 from flask import Flask, render_template, request, jsonify
 from pypdf import PdfReader
 from PIL import Image
-import io
+import time
 
 app = Flask(__name__, template_folder='../templates')
 
-# المفتاح الذهبي بتاعك (تم دمجه بالكامل)
+# المفتاح الذهبي
 API_KEY = "AIzaSyCLvKWdyd44BEuPBEQuj0xkXi9hgLbGY9U"
 genai.configure(api_key=API_KEY)
-
-# إعداد الموديل (النسخة الخارقة اللي بتفهم صور ونصوص)
 model = genai.GenerativeModel('gemini-1.5-flash')
-
-# ذاكرة مؤقتة لجلسة الشات عشان يفتكر السياق
-chat_session = model.start_chat(history=[])
 
 @app.route('/')
 def index():
@@ -25,42 +20,39 @@ def index():
 def chat():
     user_msg = request.form.get('msg', '')
     file = request.files.get('file')
-    # الميزة الجديدة: تحديد وضع الـ AI
-    mode = request.form.get('mode', 'ask') 
+    mode = request.form.get('mode', 'ask')
     
-    content_parts = []
+    content_parts = [user_msg] if user_msg else ["اشرح لي هذا الملف"]
 
     try:
         if file:
-            filename = file.filename.lower()
-            # لو الملف صورة (مسألة رياضية مثلاً)
-            if filename.endswith(('.png', '.jpg', '.jpeg', '.webp')):
+            mime_type = file.content_type
+            # معالجة الفيديو (نظام الرفع الذكي)
+            if 'video' in mime_type:
+                temp_path = f"/tmp/{file.filename}"
+                file.save(temp_path)
+                video_file = genai.upload_file(path=temp_path, display_name=file.filename)
+                # الانتظار حتى معالجة الفيديو
+                while video_file.state.name == "PROCESSING":
+                    time.sleep(2)
+                    video_file = genai.get_file(video_file.name)
+                content_parts.append(video_file)
+            
+            # معالجة الصور
+            elif 'image' in mime_type:
                 img = Image.open(file.stream)
                 content_parts.append(img)
-            # لو الملف PDF (منهج كامل)
-            elif filename.endswith('.pdf'):
+            
+            # معالجة الـ PDF
+            elif 'pdf' in mime_type:
                 reader = PdfReader(file)
-                pdf_text = "سياق المنهج من ملف PDF:\n"
-                for page in reader.pages:
-                    pdf_text += page.extract_text() + "\n"
-                # نبعت أول 30 ألف حرف عشان Vercel Free Level
-                content_parts.append(f"هذا هو محتوى المنهج، ذاكره جيداً لتجيبني منه لاحقاً: {pdf_text[:30000]}")
-        
-        # تنسيق البرومبت بناءً على الوضع المختار
-        if mode == 'summary':
-            prompt = f"من المنهج المرفق، لخص لي الأهم في نقاط ذهبية مركزة وبسيطة:\n {user_msg}"
-        elif mode == 'quiz':
-            prompt = f"من المنهج المرفق، اختبر ذكائي بسؤال واحد صعب اختيار من متعدد MCQ ولا تذكر الإجابة إلا إذا طلبتها منك:\n {user_msg}"
-        else:
-            prompt = f"أنت مساعد دراسي ذكي جداً، أجبني باحترافية وبأسلوب بسيط ومفصل من المنهج المرفق فقط:\n {user_msg}"
+                text = "".join([page.extract_text() for page in reader.pages])
+                content_parts.append(f"سياق المنهج:\n{text[:20000]}")
 
-        content_parts.append(prompt)
-
-        # إرسال البيانات لـ Gemini
-        response = chat_session.send_message(content_parts)
+        response = model.generate_content(content_parts)
         return jsonify({"reply": response.text})
 
     except Exception as e:
-        return jsonify({"reply": f"حصلت مشكلة في الاتصال بذكائي، جرب تاني يا بطل. الخطأ: {str(e)}"})
+        return jsonify({"reply": f"خطأ في النظام الذكي: {str(e)}"})
 
 app = app
