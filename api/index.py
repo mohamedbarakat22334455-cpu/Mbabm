@@ -1,106 +1,76 @@
 import os
-import google.generativeai as genai
 from flask import Flask, render_template, request, jsonify
+import google.generativeai as genai
 from pypdf import PdfReader
 from langchain_text_splitters import RecursiveCharacterTextSplitter
 import chromadb
 
 app = Flask(__name__, template_folder='../templates')
 
-# إعدادات الأمان والمجلدات لـ Vercel
-UPLOAD_FOLDER = '/tmp'
-os.makedirs(UPLOAD_FOLDER, exist_ok=True)
-
-# المفتاح الخاص بك (تم دمجه بالكامل)
+# إعداد المفتاح والذكاء الاصطناعي
 API_KEY = "AIzaSyCLvKWdyd44BEuPBEQuj0xkXi9hgLbGY9U"
 genai.configure(api_key=API_KEY)
 model = genai.GenerativeModel('gemini-1.5-flash')
 
-# قاعدة بيانات في الذاكرة (In-Memory) لتناسب Vercel
-client = chromadb.Client()
-collection = client.get_or_create_collection(name="mb_gold_vault")
+# قاعدة بيانات في الذاكرة (سريعة جداً ومناسبة للـ Free Tier)
+db_client = chromadb.Client()
+vault = db_client.get_or_create_collection(name="gold_notebook_v4")
 
-def get_embedding(text):
-    result = genai.embed_content(model="models/embedding-001", content=text, task_type="retrieval_document")
-    return result['embedding']
+def get_embed(text):
+    return genai.embed_content(model="models/embedding-001", content=text, task_type="retrieval_document")['embedding']
 
 @app.route('/')
-def index():
+def home():
     return render_template('index.html')
 
 @app.route('/upload', methods=['POST'])
-def upload():
+def handle_upload():
     if 'file' not in request.files:
-        return jsonify({"error": "لم يتم العثور على ملف"}), 400
+        return jsonify({"error": "ارفع ملف يا بطل"}), 400
     
-    file = request.files['file']
-    path = os.path.join(UPLOAD_FOLDER, file.filename)
-    file.save(path)
-    
+    pdf = request.files['file']
     try:
-        reader = PdfReader(path)
-        text_splitter = RecursiveCharacterTextSplitter(chunk_size=1000, chunk_overlap=200)
+        reader = PdfReader(pdf)
+        text_full = ""
+        for page in reader.pages:
+            text_full += page.extract_text() + "\n"
         
-        all_chunks = []
-        all_embeddings = []
-        all_metadatas = []
-        all_ids = []
-
-        for i, page in enumerate(reader.pages):
-            text = page.extract_text()
-            if text:
-                chunks = text_splitter.split_text(text)
-                for j, chunk in enumerate(chunks):
-                    all_chunks.append(chunk)
-                    all_embeddings.append(get_embedding(chunk))
-                    all_metadatas.append({"page": i + 1, "source": file.filename})
-                    all_ids.append(f"{file.filename}_{i}_{j}")
-
-        # إضافة كل البيانات دفعة واحدة للسرعة
-        collection.add(
-            embeddings=all_embeddings,
-            documents=all_chunks,
-            metadatas=all_metadatas,
-            ids=all_ids
-        )
-        return jsonify({"status": "success", "message": f"تم بنجاح! تم استيعاب {len(reader.pages)} صفحة."})
+        # تقسيم النص لضمان دقة الإجابة
+        splitter = RecursiveCharacterTextSplitter(chunk_size=800, chunk_overlap=150)
+        chunks = splitter.split_text(text_full)
+        
+        # تخزين في الذاكرة الذهبية
+        for idx, chunk in enumerate(chunks):
+            vault.add(
+                embeddings=[get_embed(chunk)],
+                documents=[chunk],
+                metadatas=[{"source": pdf.filename}],
+                ids=[f"id_{idx}"]
+            )
+        return jsonify({"status": "Success", "msg": f"تم تجهيز {len(reader.pages)} صفحة بنجاح!"})
     except Exception as e:
-        return jsonify({"error": f"فشل المعالجة: {str(e)}"}), 500
+        return jsonify({"error": str(e)}), 500
 
-@app.route('/ask', methods=['POST'])
-def ask():
-    data = request.json
-    query = data.get('question', '')
-    mode = data.get('mode', 'ask')
-
-    if not query and mode == 'ask':
-        return jsonify({"answer": "من فضلك اكتب سؤالك أولاً."})
-
-    # البحث الدلالي المتطور
-    search_query = query if query else "ملخص شامل للمحتوى"
-    results = collection.query(query_embeddings=[get_embedding(search_query)], n_results=4)
+@app.route('/chat', methods=['POST'])
+def chat():
+    user_msg = request.json.get('msg', '')
+    mode = request.json.get('mode', 'ask')
     
-    if not results['documents'] or not results['documents'][0]:
-        return jsonify({"answer": "يرجى رفع ملف المنهج (PDF) أولاً ليتمكن الذكاء الاصطناعي من الإجابة."})
+    # البحث عن المعلومات
+    search = vault.query(query_embeddings=[get_embed(user_msg if user_msg else "ملخص")], n_results=3)
+    context = "\n".join(search['documents'][0]) if search['documents'][0] else ""
 
-    context = "\n\n".join(results['documents'][0])
-    sources = list(set([str(m['page']) for m in results['metadatas'][0]]))
+    if not context:
+        return jsonify({"reply": "ارفع المنهج الأول عشان أقدر أجاوبك بدقة."})
 
-    # توجيه الـ AI بناءً على الطلب
+    # البرومبت الذهبي
     prompts = {
-        "quiz": f"بناءً على النص التالي: {context}\n ضع سؤالاً واحداً اختيار من متعدد مع 4 خيارات، ولا تذكر الإجابة الصحيحة إلا إذا طلبتها منك.",
-        "summarize": f"بناءً على النص التالي: {context}\n قم بتلخيص أهم النقاط في شكل قائمة (bullet points) وبأسلوب مبسط.",
-        "ask": f"أنت مساعد دراسي ذكي. أجب بدقة من النص المرفق فقط: {context}\n\nالسؤال: {query}"
+        "ask": f"أجب باحترافية من المنهج فقط: {context}\nالسؤال: {user_msg}",
+        "summary": f"لخص المنهج التالي في نقاط ذهبية مركزة: {context}",
+        "quiz": f"استخرج سؤالاً ذكياً من هذا النص: {context}"
     }
 
-    try:
-        response = model.generate_content(prompts.get(mode, prompts['ask']))
-        return jsonify({
-            "answer": response.text,
-            "pages": " | ".join(sources)
-        })
-    except Exception as e:
-        return jsonify({"answer": "عذراً، حدث خطأ في التواصل مع المحرك."})
+    response = model.generate_content(prompts.get(mode, prompts['ask']))
+    return jsonify({"reply": response.text})
 
-# لضمان عمل Flask على Vercel
 app = app
