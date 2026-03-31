@@ -2,108 +2,201 @@
 <html lang="ar" dir="rtl">
 <head>
     <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MB Gold AI - العقل الثاني</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>MB GOLD AI | العقل الثاني</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&family=Recursive:wght@300;900&display=swap" rel="stylesheet">
     <style>
-        :root { --bg: #020617; --glass: rgba(30, 41, 59, 0.7); --accent: #38bdf8; --text: #f1f5f9; }
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', Tahoma, sans-serif; display: flex; height: 100vh; overflow: hidden; }
+        :root { 
+            --gold: #FFD700; --neon: #facc15; --deep-gold: #c6a700;
+            --dark: #020202; --bg: #050505; --glass: rgba(255, 255, 255, 0.03);
+            --border: rgba(255, 215, 0, 0.15); --shadow: 0 0 25px rgba(255, 215, 0, 0.1);
+        }
         
-        /* Sidebar */
-        .sidebar { width: 280px; background: var(--glass); backdrop-filter: blur(10px); border-left: 1px solid rgba(255,255,255,0.1); padding: 25px; display: flex; flex-direction: column; gap: 20px; }
-        .logo { font-size: 24px; font-weight: 800; color: var(--accent); text-align: center; margin-bottom: 20px; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Cairo', sans-serif; outline: none; -webkit-tap-highlight-color: transparent; }
         
-        .nav-btn { background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: white; padding: 15px; border-radius: 12px; cursor: pointer; transition: 0.3s; text-align: right; width: 100%; }
-        .nav-btn:hover { background: var(--accent); color: black; transform: translateX(-5px); }
+        body { 
+            background: var(--dark);
+            background-image: radial-gradient(circle at 50% 10%, #15150a 0%, var(--bg) 80%);
+            color: #fff; height: 100vh; display: flex; overflow: hidden; position: relative;
+        }
 
-        /* Main Area */
-        .main { flex: 1; display: flex; flex-direction: column; position: relative; }
-        .chat-container { flex: 1; overflow-y: auto; padding: 40px; display: flex; flex-direction: column; gap: 25px; }
-        
-        .bubble { max-width: 85%; padding: 20px; border-radius: 18px; font-size: 15px; line-height: 1.7; position: relative; animation: fadeIn 0.4s ease; }
-        .user { align-self: flex-start; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); }
-        .ai { align-self: flex-end; background: rgba(56, 189, 248, 0.1); border: 1px solid var(--accent); }
-        
-        .source-tag { font-size: 11px; color: var(--accent); margin-top: 10px; display: block; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 8px; }
+        /* Neon Glow Overlay */
+        body::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle at center, transparent, rgba(0,0,0,0.8)); pointer-events: none; }
 
-        /* Input Area */
-        .input-area { padding: 30px; background: var(--bg); border-top: 1px solid rgba(255,255,255,0.1); display: flex; gap: 15px; align-items: center; }
-        input { flex: 1; background: var(--glass); border: 1px solid rgba(255,255,255,0.2); border-radius: 15px; color: white; padding: 15px 25px; outline: none; }
-        .send-btn { background: var(--accent); color: black; border: none; padding: 15px 30px; border-radius: 15px; font-weight: bold; cursor: pointer; transition: 0.3s; }
-        .send-btn:hover { opacity: 0.8; }
+        /* Glassmorphism Sidebar (App Ready) */
+        .sidebar { 
+            width: 320px; background: var(--glass); 
+            backdrop-filter: blur(25px); border-left: 1px solid var(--border);
+            padding: 40px 20px; display: flex; flex-direction: column; gap: 25px;
+            box-shadow: 10px 0 30px rgba(0,0,0,0.5); z-index: 10; transition: 0.3s;
+        }
 
-        /* Loader */
-        .loader { width: 25px; height: 25px; border: 3px solid rgba(255,255,255,0.1); border-top-color: var(--accent); border-radius: 50%; animation: spin 1s linear infinite; display: none; }
+        .logo { 
+            font-family: 'Recursive', sans-serif; font-size: 36px; font-weight: 900; color: var(--gold); 
+            text-shadow: 0 0 25px var(--neon), 0 0 10px #c6a700; text-align: center; margin-bottom: 30px; letter-spacing: -1px;
+        }
+
+        .upload-area {
+            border: 2px dashed rgba(255, 215, 0, 0.25); border-radius: 20px;
+            padding: 25px; text-align: center; cursor: pointer; transition: 0.3s;
+            background: rgba(255, 215, 0, 0.02);
+        }
+        .upload-area:hover { background: rgba(255, 215, 0, 0.05); border-color: var(--gold); box-shadow: var(--shadow); }
+        .upload-icon { font-size: 30px; color: var(--gold); margin-bottom: 10px; }
+
+        /* Main Chat Area */
+        .main-chat { flex: 1; display: flex; flex-direction: column; position: relative; z-index: 5; }
+        #chat-window { 
+            flex: 1; overflow-y: auto; padding: 40px; display: flex; flex-direction: column; gap: 25px;
+            scrollbar-width: thin; scrollbar-color: var(--deep-gold) transparent;
+        }
+
+        /* Message Bubbles - Golden Beast Style */
+        .bubble { 
+            max-width: 80%; padding: 18px 25px; border-radius: 20px; line-height: 1.7; font-size: 15px;
+            backdrop-filter: blur(10px); animation: slideUp 0.4s ease-out; position: relative;
+        }
+        .user-msg { 
+            align-self: flex-start; background: rgba(255,255,255,0.06); 
+            border: 1px solid rgba(255,255,255,0.08); color: #ddd;
+            border-bottom-right-radius: 5px;
+        }
+        .ai-msg { 
+            align-self: flex-end; background: rgba(255, 215, 0, 0.04); 
+            border: 1px solid var(--gold); box-shadow: 0 0 20px rgba(255, 215, 0, 0.1);
+            color: #fff; font-weight: 700; border-bottom-left-radius: 5px;
+        }
+        
+        /* Message Fade-in Animation */
+        @keyframes slideUp { from { opacity: 0; transform: translateY(30px) scale(0.9); } to { opacity: 1; transform: translateY(0) scale(1); } }
+
+        /* Neon Golden Loader */
+        .loader { 
+            width: 25px; height: 25px; border: 3px solid rgba(255,215,0,0.1); border-top-color: var(--gold); 
+            border-radius: 50%; animation: spin 0.8s linear infinite; display: none; margin-left: auto;
+            box-shadow: 0 0 10px var(--neon);
+        }
         @keyframes spin { to { transform: rotate(360deg); } }
-        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* App Quick Tools (New Feature) */
+        .quick-tools {
+            display: flex; gap: 10px; padding: 0 20px; margin-bottom: 10px;
+        }
+        .tool-btn {
+            background: var(--glass); border: 1px solid var(--border); color: #ccc;
+            padding: 8px 15px; border-radius: 12px; font-size: 12px; cursor: pointer; transition: 0.3s;
+        }
+        .tool-btn:hover { background: rgba(255, 215, 0, 0.05); color: var(--gold); border-color: var(--gold); }
+
+        /* Input Bar (Floating App Style) */
+        .input-bar-container { padding: 0 20px 20px 20px; }
+        .input-bar {
+            background: rgba(20, 20, 20, 0.8); backdrop-filter: blur(10px); border-radius: 20px; 
+            padding: 12px 25px; display: flex; align-items: center; gap: 15px;
+            border: 1px solid var(--border); box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        input { flex: 1; background: transparent; border: none; color: #fff; outline: none; font-size: 16px; font-weight: 700; }
+        .send-btn { 
+            background: var(--gold); color: #000; border: none; padding: 12px 30px; 
+            border-radius: 15px; font-weight: 900; font-size: 16px; cursor: pointer; transition: 0.3s;
+        }
+        .send-btn:hover { transform: scale(1.05); box-shadow: 0 0 20px var(--neon); }
+
     </style>
 </head>
 <body>
-    <div class="sidebar">
+    <div class="sidebar" id="sidebar">
         <div class="logo">MB GOLD AI</div>
-        <button class="nav-btn" onclick="document.getElementById('pdf-file').click()">📁 ارفع المنهج (PDF)</button>
-        <input type="file" id="pdf-file" hidden accept=".pdf" onchange="handleUpload()">
-        <button class="nav-btn" onclick="askAI('summarize')">📝 تلخيص المنهج</button>
-        <button class="nav-btn" onclick="askAI('quiz')">🧠 اختبر ذكائي</button>
-        <div id="status-msg" style="margin-top: auto; font-size: 12px; color: var(--accent); text-align: center;"></div>
+        <div class="upload-area" onclick="document.getElementById('file-input').click()">
+            <div class="upload-icon">📁</div>
+            <p style="color: white; font-weight: 700;">ارفع المنهج أو الصورة</p>
+            <span id="file-name" style="font-size: 12px; color: var(--gold);">PDF, JPG, PNG</span>
+        </div>
+        <input type="file" id="file-input" hidden onchange="updateFileName()">
+        
+        <p style="font-size: 13px; color: #888; text-align: center; margin-top: auto; border-top: 1px solid var(--border); padding-top: 20px;">النسخة الذهبية "الوحش" كاملة للتحويل لتطبيق</p>
     </div>
 
-    <div class="main">
-        <div class="chat-container" id="chat">
-            <div class="bubble ai">مرحباً بك في النسخة المطورة. ارفع ملف المنهج الآن لنبدأ الدراسة الذكية.</div>
+    <div class="main-chat">
+        <div id="chat-window">
+            <div class="bubble ai-msg">مرحباً يا محمد. أنا مساعدك الذهبي الأسطوري. الواجهة دي بقت مستعدة تماماً إنها تشرفك كأنه تطبيق APK. ارفع الملفات، وسؤالك هو أمري.</div>
         </div>
-        <div class="input-area">
-            <div class="loader" id="loader"></div>
-            <input type="text" id="user-input" placeholder="اسأل أي سؤال في المنهج المرفوع...">
-            <button class="send-btn" onclick="askAI('ask')">إرسال</button>
+        
+        <div class="quick-tools">
+            <button class="tool-btn" onclick="askAI('summary')">📝 تلخيص سريع</button>
+            <button class="tool-btn" onclick="askAI('quiz')">🧠 سؤال ذكي</button>
+            <button class="tool-btn" onclick="document.getElementById('chat-window').innerHTML = ''">🧹 مسح الشات</button>
+        </div>
+
+        <div class="input-bar-container">
+            <div class="input-bar">
+                <div class="loader" id="loader"></div>
+                <input type="text" id="user-input" placeholder="اسأل أي حاجة في المنهج المرفوع...">
+                <button class="send-btn" onclick="askAI('ask')">إرسال</button>
+            </div>
         </div>
     </div>
 
     <script>
-        async function handleUpload() {
-            const file = document.getElementById('pdf-file').files[0];
-            if (!file) return;
-            
-            document.getElementById('loader').style.display = 'block';
-            document.getElementById('status-msg').innerText = "جاري قراءة الملف...";
-            
-            const formData = new FormData();
-            formData.append('file', file);
-            
-            const res = await fetch('/upload', { method: 'POST', body: formData });
-            const data = await res.json();
-            
-            document.getElementById('loader').style.display = 'none';
-            document.getElementById('status-msg').innerText = data.message || data.error;
+        // ميزة جديدة: تذكر آخر وضع AI مختار
+        let currentMode = 'ask';
+
+        function updateFileName() {
+            const file = document.getElementById('file-input').files[0];
+            const fileNameDisplay = document.getElementById('file-name');
+            if (file) {
+                fileNameDisplay.innerText = file.name;
+                fileNameDisplay.style.color = "#4ade80"; // أخضر نيون للنجاح
+            } else {
+                fileNameDisplay.innerText = "PDF, JPG, PNG";
+                fileNameDisplay.style.color = "var(--gold)";
+            }
         }
 
         async function askAI(mode) {
+            currentMode = mode;
             const input = document.getElementById('user-input');
-            const chat = document.getElementById('chat');
-            const question = input.value;
+            const fileInput = document.getElementById('file-input');
+            const chatWindow = document.getElementById('chat-window');
+            const loader = document.getElementById('loader');
             
-            if (mode === 'ask' && !question) return;
+            if (!input.value && !fileInput.files[0] && mode === 'ask') return;
 
-            // إضافة رسالة المستخدم
-            chat.innerHTML += `<div class="bubble user">${question || "طلب " + mode}</div>`;
-            input.value = '';
-            document.getElementById('loader').style.display = 'block';
-            chat.scrollTop = chat.scrollHeight;
+            // إضافة رسالة المستخدم بتأثير حركي
+            let userDisplayMsg = input.value || (fileInput.files[0] ? `[ملف مرفق: ${fileInput.files[0].name}]` : "طلب " + mode);
+            chatWindow.innerHTML += `<div class="bubble user-msg">${userDisplayMsg}</div>`;
+            chatWindow.scrollTop = chatWindow.scrollHeight;
 
-            const res = await fetch('/ask', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ question: question, mode: mode })
-            });
-            const data = await res.json();
+            // تحضير البيانات للإرسال
+            const formData = new FormData();
+            formData.append('msg', input.value);
+            if (fileInput.files[0]) formData.append('file', fileInput.files[0]);
+            formData.append('mode', mode);
+
+            // تصفية مربع الكتابة
+            input.value = "";
+            loader.style.display = "block";
+
+            // إرسال البيانات للسيرفر (بيئة Vercel)
+            try {
+                const response = await fetch('/chat', { method: 'POST', body: formData });
+                const data = await response.json();
+
+                // إضافة رد الذكاء الاصطناعي بلون الذهب
+                chatWindow.innerHTML += `<div class="bubble ai-msg">${data.reply.replace(/\n/g, '<br>')}</div>`;
+            } catch (error) {
+                chatWindow.innerHTML += `<div class="bubble ai-msg" style="color: #ef4444; border-color: #ef4444;">حصل خطأ في الاتصال، جرب تاني د.</div>`;
+            }
+
+            loader.style.display = "none";
+            chatWindow.scrollTop = chatWindow.scrollHeight;
             
-            document.getElementById('loader').style.display = 'none';
-            chat.innerHTML += `
-                <div class="bubble ai">
-                    ${data.answer.replace(/\n/g, '<br>')}
-                    ${data.pages ? `<span class="source-tag">المصدر: صفحة ${data.pages}</span>` : ''}
-                </div>`;
-            chat.scrollTop = chat.scrollHeight;
+            // مسح الملف المرفوع للأمان بعد الإرسال
+            if (currentMode !== 'summarize' && currentMode !== 'quiz') {
+                fileInput.value = ""; 
+                document.getElementById('file-name').innerText = "PDF, JPG, PNG";
+                document.getElementById('file-name').style.color = "var(--gold)";
+            }
         }
     </script>
 </body>
