@@ -3,200 +3,176 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>MB GOLD AI | العقل الثاني</title>
-    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&family=Recursive:wght@300;900&display=swap" rel="stylesheet">
+    <title>MB SMART SYSTEM | الوحش المطور</title>
+    <link href="https://fonts.googleapis.com/css2?family=Cairo:wght@400;700;900&display=swap" rel="stylesheet">
     <style>
         :root { 
-            --gold: #FFD700; --neon: #facc15; --deep-gold: #c6a700;
-            --dark: #020202; --bg: #050505; --glass: rgba(255, 255, 255, 0.03);
-            --border: rgba(255, 215, 0, 0.15); --shadow: 0 0 25px rgba(255, 215, 0, 0.1);
+            --accent: #3b82f6; --bg: #050507; --card: rgba(23, 23, 27, 0.8);
+            --border: rgba(255, 255, 255, 0.08); --text: #e2e8f0;
         }
         
-        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Cairo', sans-serif; outline: none; -webkit-tap-highlight-color: transparent; }
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Cairo', sans-serif; outline: none; }
         
         body { 
-            background: var(--dark);
-            background-image: radial-gradient(circle at 50% 10%, #15150a 0%, var(--bg) 80%);
-            color: #fff; height: 100vh; display: flex; overflow: hidden; position: relative;
+            background: var(--bg); color: var(--text); height: 100vh; 
+            display: flex; overflow: hidden;
+            background-image: radial-gradient(circle at 50% 0%, #1a1a2e 0%, #050507 100%);
         }
 
-        /* Neon Glow Overlay */
-        body::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: radial-gradient(circle at center, transparent, rgba(0,0,0,0.8)); pointer-events: none; }
-
-        /* Glassmorphism Sidebar (App Ready) */
+        /* Sidebar - Glassmorphism Control Center */
         .sidebar { 
-            width: 320px; background: var(--glass); 
-            backdrop-filter: blur(25px); border-left: 1px solid var(--border);
-            padding: 40px 20px; display: flex; flex-direction: column; gap: 25px;
-            box-shadow: 10px 0 30px rgba(0,0,0,0.5); z-index: 10; transition: 0.3s;
+            width: 320px; background: var(--card); backdrop-filter: blur(20px);
+            border-left: 1px solid var(--border); padding: 35px 20px;
+            display: flex; flex-direction: column; gap: 20px; z-index: 10;
         }
 
-        .logo { 
-            font-family: 'Recursive', sans-serif; font-size: 36px; font-weight: 900; color: var(--gold); 
-            text-shadow: 0 0 25px var(--neon), 0 0 10px #c6a700; text-align: center; margin-bottom: 30px; letter-spacing: -1px;
-        }
+        .logo { font-size: 26px; font-weight: 900; color: var(--accent); text-align: center; margin-bottom: 20px; letter-spacing: 1px; }
 
-        .upload-area {
-            border: 2px dashed rgba(255, 215, 0, 0.25); border-radius: 20px;
-            padding: 25px; text-align: center; cursor: pointer; transition: 0.3s;
-            background: rgba(255, 215, 0, 0.02);
+        .btn-tool {
+            background: rgba(255,255,255,0.03); border: 1px solid var(--border);
+            color: #ccc; padding: 14px; border-radius: 12px; cursor: pointer;
+            transition: 0.3s; width: 100%; text-align: right; font-weight: 700;
         }
-        .upload-area:hover { background: rgba(255, 215, 0, 0.05); border-color: var(--gold); box-shadow: var(--shadow); }
-        .upload-icon { font-size: 30px; color: var(--gold); margin-bottom: 10px; }
+        .btn-tool:hover { background: var(--accent); color: white; transform: translateX(-5px); }
 
-        /* Main Chat Area */
-        .main-chat { flex: 1; display: flex; flex-direction: column; position: relative; z-index: 5; }
+        /* Main Workspace */
+        .main-content { flex: 1; display: flex; flex-direction: column; position: relative; }
+        
         #chat-window { 
             flex: 1; overflow-y: auto; padding: 40px; display: flex; flex-direction: column; gap: 25px;
-            scrollbar-width: thin; scrollbar-color: var(--deep-gold) transparent;
+            scroll-behavior: smooth;
         }
 
-        /* Message Bubbles - Golden Beast Style */
+        /* Bubbles - Professional Style */
         .bubble { 
-            max-width: 80%; padding: 18px 25px; border-radius: 20px; line-height: 1.7; font-size: 15px;
-            backdrop-filter: blur(10px); animation: slideUp 0.4s ease-out; position: relative;
+            max-width: 85%; padding: 18px 22px; border-radius: 18px; line-height: 1.7;
+            font-size: 15px; animation: fadeIn 0.4s ease; position: relative;
         }
-        .user-msg { 
-            align-self: flex-start; background: rgba(255,255,255,0.06); 
-            border: 1px solid rgba(255,255,255,0.08); color: #ddd;
-            border-bottom-right-radius: 5px;
+        .user-msg { align-self: flex-start; background: rgba(255,255,255,0.05); border: 1px solid var(--border); }
+        .ai-msg { align-self: flex-end; background: rgba(59, 130, 246, 0.08); border-right: 4px solid var(--accent); color: #fff; }
+
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(15px); } to { opacity: 1; transform: translateY(0); } }
+
+        /* Input Zone - The Area You Wanted */
+        .input-zone { 
+            background: var(--card); backdrop-filter: blur(20px);
+            border-top: 1px solid var(--border); padding: 25px;
+            display: flex; flex-direction: column; gap: 15px;
         }
-        .ai-msg { 
-            align-self: flex-end; background: rgba(255, 215, 0, 0.04); 
-            border: 1px solid var(--gold); box-shadow: 0 0 20px rgba(255, 215, 0, 0.1);
-            color: #fff; font-weight: 700; border-bottom-left-radius: 5px;
+
+        .text-box-wrapper {
+            background: rgba(0,0,0,0.3); border: 1px solid var(--border);
+            border-radius: 15px; padding: 15px; position: relative;
         }
+        textarea {
+            width: 100%; background: transparent; border: none; color: white;
+            resize: none; height: 100px; font-size: 16px; line-height: 1.5;
+        }
+
+        .action-bar { display: flex; justify-content: space-between; align-items: center; }
         
-        /* Message Fade-in Animation */
-        @keyframes slideUp { from { opacity: 0; transform: translateY(30px) scale(0.9); } to { opacity: 1; transform: translateY(0) scale(1); } }
+        .status-info { display: flex; align-items: center; gap: 10px; font-size: 13px; color: #888; }
+        .status-dot { width: 10px; height: 10px; background: #333; border-radius: 50%; }
+        .active-dot { background: #22c55e; box-shadow: 0 0 10px #22c55e; }
 
-        /* Neon Golden Loader */
-        .loader { 
-            width: 25px; height: 25px; border: 3px solid rgba(255,215,0,0.1); border-top-color: var(--gold); 
-            border-radius: 50%; animation: spin 0.8s linear infinite; display: none; margin-left: auto;
-            box-shadow: 0 0 10px var(--neon);
-        }
-        @keyframes spin { to { transform: rotate(360deg); } }
-
-        /* App Quick Tools (New Feature) */
-        .quick-tools {
-            display: flex; gap: 10px; padding: 0 20px; margin-bottom: 10px;
-        }
-        .tool-btn {
-            background: var(--glass); border: 1px solid var(--border); color: #ccc;
-            padding: 8px 15px; border-radius: 12px; font-size: 12px; cursor: pointer; transition: 0.3s;
-        }
-        .tool-btn:hover { background: rgba(255, 215, 0, 0.05); color: var(--gold); border-color: var(--gold); }
-
-        /* Input Bar (Floating App Style) */
-        .input-bar-container { padding: 0 20px 20px 20px; }
-        .input-bar {
-            background: rgba(20, 20, 20, 0.8); backdrop-filter: blur(10px); border-radius: 20px; 
-            padding: 12px 25px; display: flex; align-items: center; gap: 15px;
-            border: 1px solid var(--border); box-shadow: 0 10px 30px rgba(0,0,0,0.5);
-        }
-        input { flex: 1; background: transparent; border: none; color: #fff; outline: none; font-size: 16px; font-weight: 700; }
         .send-btn { 
-            background: var(--gold); color: #000; border: none; padding: 12px 30px; 
-            border-radius: 15px; font-weight: 900; font-size: 16px; cursor: pointer; transition: 0.3s;
+            background: var(--accent); color: white; border: none; 
+            padding: 12px 35px; border-radius: 12px; font-weight: 900;
+            cursor: pointer; transition: 0.3s;
         }
-        .send-btn:hover { transform: scale(1.05); box-shadow: 0 0 20px var(--neon); }
+        .send-btn:hover { filter: brightness(1.2); transform: scale(1.05); }
 
+        /* Loader */
+        .loader { width: 20px; height: 20px; border: 2px solid rgba(255,255,255,0.1); border-top-color: var(--accent); border-radius: 50%; animation: spin 1s linear infinite; display: none; }
+        @keyframes spin { to { transform: rotate(360deg); } }
     </style>
 </head>
 <body>
-    <div class="sidebar" id="sidebar">
-        <div class="logo">MB GOLD AI</div>
-        <div class="upload-area" onclick="document.getElementById('file-input').click()">
-            <div class="upload-icon">📁</div>
-            <p style="color: white; font-weight: 700;">ارفع المنهج أو الصورة</p>
-            <span id="file-name" style="font-size: 12px; color: var(--gold);">PDF, JPG, PNG</span>
-        </div>
-        <input type="file" id="file-input" hidden onchange="updateFileName()">
+    <div class="sidebar">
+        <div class="logo">MB SYSTEM v2</div>
         
-        <p style="font-size: 13px; color: #888; text-align: center; margin-top: auto; border-top: 1px solid var(--border); padding-top: 20px;">النسخة الذهبية "الوحش" كاملة للتحويل لتطبيق</p>
+        <div style="margin-bottom: 20px;">
+            <p style="font-size: 12px; color: #666; margin-bottom: 10px;">إدارة المنهج والوسائط</p>
+            <button class="btn-tool" onclick="document.getElementById('file-in').click()">📁 إرفاق (فيديو/صور/PDF)</button>
+            <input type="file" id="file-in" hidden onchange="onFileSelected()">
+        </div>
+
+        <div style="display: flex; flex-direction: column; gap: 10px;">
+            <p style="font-size: 12px; color: #666;">أدوات التحكم الذكية</p>
+            <button class="btn-tool" onclick="handleAction('summarize')">📝 تلخيص ذكي للمحتوى</button>
+            <button class="btn-tool" onclick="handleAction('exam')">🧠 إنشاء اختبار تدريبي</button>
+            <button class="btn-tool" onclick="handleAction('explain')">🔍 شرح مفصل للصور/الفيديو</button>
+            <button class="btn-tool" style="margin-top: 20px; color: #ef4444;" onclick="document.getElementById('chat-window').innerHTML=''">🧹 مسح المحادثة</button>
+        </div>
+
+        <div id="file-status" style="margin-top: auto; font-size: 12px; color: var(--accent); text-align: center;"></div>
     </div>
 
-    <div class="main-chat">
+    <div class="main-content">
         <div id="chat-window">
-            <div class="bubble ai-msg">مرحباً يا محمد. أنا مساعدك الذهبي الأسطوري. الواجهة دي بقت مستعدة تماماً إنها تشرفك كأنه تطبيق APK. ارفع الملفات، وسؤالك هو أمري.</div>
-        </div>
-        
-        <div class="quick-tools">
-            <button class="tool-btn" onclick="askAI('summary')">📝 تلخيص سريع</button>
-            <button class="tool-btn" onclick="askAI('quiz')">🧠 سؤال ذكي</button>
-            <button class="tool-btn" onclick="document.getElementById('chat-window').innerHTML = ''">🧹 مسح الشات</button>
+            <div class="bubble ai-msg">مرحباً بك في نظام MB المطور. ارفع الفيديو، الصور، أو الـ PDF، واسألني أي سؤال في منطقة الكتابة بالأسفل.</div>
         </div>
 
-        <div class="input-bar-container">
-            <div class="input-bar">
-                <div class="loader" id="loader"></div>
-                <input type="text" id="user-input" placeholder="اسأل أي حاجة في المنهج المرفوع...">
-                <button class="send-btn" onclick="askAI('ask')">إرسال</button>
+        <div class="input-zone">
+            <div class="text-box-wrapper">
+                <textarea id="user-msg" placeholder="اكتب أسئلتك هنا.. اسأل عن أي تفاصيل في المنهج أو الملف المرفوع"></textarea>
+            </div>
+            
+            <div class="action-bar">
+                <div class="status-info">
+                    <div class="status-dot" id="dot"></div>
+                    <span id="loader-text">النظام جاهز</span>
+                    <div class="loader" id="loader"></div>
+                </div>
+                <button class="send-btn" onclick="handleAction('ask')">إرسال الطلب</button>
             </div>
         </div>
     </div>
 
     <script>
-        // ميزة جديدة: تذكر آخر وضع AI مختار
-        let currentMode = 'ask';
+        let currentFile = null;
 
-        function updateFileName() {
-            const file = document.getElementById('file-input').files[0];
-            const fileNameDisplay = document.getElementById('file-name');
-            if (file) {
-                fileNameDisplay.innerText = file.name;
-                fileNameDisplay.style.color = "#4ade80"; // أخضر نيون للنجاح
-            } else {
-                fileNameDisplay.innerText = "PDF, JPG, PNG";
-                fileNameDisplay.style.color = "var(--gold)";
+        function onFileSelected() {
+            currentFile = document.getElementById('file-in').files[0];
+            if (currentFile) {
+                document.getElementById('file-status').innerText = "تم تجهيز: " + currentFile.name;
+                document.getElementById('dot').classList.add('active-dot');
+                document.getElementById('loader-text').innerText = "تم إرفاق الملف";
             }
         }
 
-        async function askAI(mode) {
-            currentMode = mode;
-            const input = document.getElementById('user-input');
-            const fileInput = document.getElementById('file-input');
+        async function handleAction(mode) {
+            const msgInput = document.getElementById('user-msg');
             const chatWindow = document.getElementById('chat-window');
             const loader = document.getElementById('loader');
-            
-            if (!input.value && !fileInput.files[0] && mode === 'ask') return;
+            const msg = msgInput.value;
 
-            // إضافة رسالة المستخدم بتأثير حركي
-            let userDisplayMsg = input.value || (fileInput.files[0] ? `[ملف مرفق: ${fileInput.files[0].name}]` : "طلب " + mode);
-            chatWindow.innerHTML += `<div class="bubble user-msg">${userDisplayMsg}</div>`;
+            if (!msg && !currentFile && mode === 'ask') return;
+
+            // إضافة رسالة المستخدم
+            chatWindow.innerHTML += `<div class="bubble user-msg">${msg || "طلب تحليل محتوى (" + mode + ")"}</div>`;
+            msgInput.value = "";
+            loader.style.display = "block";
+            document.getElementById('loader-text').innerText = "جاري المعالجة...";
             chatWindow.scrollTop = chatWindow.scrollHeight;
 
-            // تحضير البيانات للإرسال
-            const formData = new FormData();
-            formData.append('msg', input.value);
-            if (fileInput.files[0]) formData.append('file', fileInput.files[0]);
-            formData.append('mode', mode);
+            const fd = new FormData();
+            fd.append('msg', msg);
+            fd.append('mode', mode);
+            if (currentFile) fd.append('file', currentFile);
 
-            // تصفية مربع الكتابة
-            input.value = "";
-            loader.style.display = "block";
-
-            // إرسال البيانات للسيرفر (بيئة Vercel)
             try {
-                const response = await fetch('/chat', { method: 'POST', body: formData });
-                const data = await response.json();
-
-                // إضافة رد الذكاء الاصطناعي بلون الذهب
+                const res = await fetch('/chat', { method: 'POST', body: fd });
+                const data = await res.json();
+                
                 chatWindow.innerHTML += `<div class="bubble ai-msg">${data.reply.replace(/\n/g, '<br>')}</div>`;
-            } catch (error) {
-                chatWindow.innerHTML += `<div class="bubble ai-msg" style="color: #ef4444; border-color: #ef4444;">حصل خطأ في الاتصال، جرب تاني د.</div>`;
+            } catch (e) {
+                chatWindow.innerHTML += `<div class="bubble ai-msg" style="color: #ef4444;">عذراً، حدث خطأ في معالجة طلبك.</div>`;
             }
 
             loader.style.display = "none";
+            document.getElementById('loader-text').innerText = "النظام جاهز";
             chatWindow.scrollTop = chatWindow.scrollHeight;
-            
-            // مسح الملف المرفوع للأمان بعد الإرسال
-            if (currentMode !== 'summarize' && currentMode !== 'quiz') {
-                fileInput.value = ""; 
-                document.getElementById('file-name').innerText = "PDF, JPG, PNG";
-                document.getElementById('file-name').style.color = "var(--gold)";
-            }
         }
     </script>
 </body>
