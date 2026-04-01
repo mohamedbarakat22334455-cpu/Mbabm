@@ -1,16 +1,18 @@
 import os
+import time
 import google.generativeai as genai
 from flask import Flask, render_template, request, jsonify
 from pypdf import PdfReader
 from PIL import Image
-import time
 
 app = Flask(__name__, template_folder='../templates')
 
-# المفتاح الذهبي
+# المفتاح الذهبي الخاص بك
 API_KEY = "AIzaSyCLvKWdyd44BEuPBEQuj0xkXi9hgLbGY9U"
 genai.configure(api_key=API_KEY)
-model = genai.GenerativeModel('gemini-1.5-flash')
+
+# استخدام الإصدار الأحدث لتجنب خطأ 404
+model = genai.GenerativeModel('gemini-1.5-flash-latest')
 
 @app.route('/')
 def index():
@@ -22,32 +24,46 @@ def chat():
     file = request.files.get('file')
     mode = request.form.get('mode', 'ask')
     
-    content_parts = [user_msg] if user_msg else ["اشرح لي هذا الملف"]
+    content_parts = []
+    
+    # تحديد وظيفة الـ AI بناءً على الاختيار
+    instructions = {
+        "summarize": "لخص هذا المحتوى في نقاط مركزة وواضحة.",
+        "exam": "أنشئ اختباراً من 5 أسئلة اختيار من متعدد بناءً على هذا المحتوى.",
+        "explain": "اشرح محتوى هذا الملف (فيديو/صورة/نص) بالتفصيل المبسط.",
+        "ask": "أجب على السؤال التالي بناءً على الملف المرفق:"
+    }
+    
+    system_prompt = instructions.get(mode, instructions["ask"])
+    if user_msg:
+        content_parts.append(f"{system_prompt}\n{user_msg}")
+    else:
+        content_parts.append(system_prompt)
 
     try:
         if file:
-            mime_type = file.content_type
-            # معالجة الفيديو (نظام الرفع الذكي)
-            if 'video' in mime_type:
+            mime = file.content_type
+            # دعم الفيديو
+            if 'video' in mime:
                 temp_path = f"/tmp/{file.filename}"
                 file.save(temp_path)
-                video_file = genai.upload_file(path=temp_path, display_name=file.filename)
-                # الانتظار حتى معالجة الفيديو
-                while video_file.state.name == "PROCESSING":
+                g_file = genai.upload_file(path=temp_path)
+                while g_file.state.name == "PROCESSING":
                     time.sleep(2)
-                    video_file = genai.get_file(video_file.name)
-                content_parts.append(video_file)
-            
-            # معالجة الصور
-            elif 'image' in mime_type:
+                    g_file = genai.get_file(g_file.name)
+                content_parts.append(g_file)
+            # دعم الصور
+            elif 'image' in mime:
                 img = Image.open(file.stream)
                 content_parts.append(img)
-            
-            # معالجة الـ PDF
-            elif 'pdf' in mime_type:
+            # دعم الـ PDF
+            elif 'pdf' in mime:
                 reader = PdfReader(file)
-                text = "".join([page.extract_text() for page in reader.pages])
-                content_parts.append(f"سياق المنهج:\n{text[:20000]}")
+                text = "سياق المنهج:\n" + "".join([p.extract_text() for p in reader.pages])
+                content_parts.append(text[:15000])
+
+        if not content_parts:
+            return jsonify({"reply": "يا محمد، لم ترسل أي بيانات لمعالجتها!"})
 
         response = model.generate_content(content_parts)
         return jsonify({"reply": response.text})
